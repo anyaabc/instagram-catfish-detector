@@ -1,0 +1,9 @@
+Flask
+Flask-Cors
+requests
+deepface==0.0.93
+tensorflow
+tf-keras
+Pillow
+numpy
+pandas
