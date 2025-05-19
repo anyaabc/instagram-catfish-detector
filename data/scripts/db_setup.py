@@ -24,7 +24,8 @@ CREATE TABLE IF NOT EXISTS posts (
     username TEXT,
     user_id TEXT,
     profile_url TEXT,
-    profile_image TEXT,
+    profile_image_url TEXT,     -- URL asli dari JSON
+    profile_image_local TEXT,   -- path lokal foto profil
     followers INTEGER,
     posts_count INTEGER,
     is_verified BOOLEAN,
@@ -69,7 +70,14 @@ with open(DATASET_FILE, 'r', encoding='utf-8') as f:
             user_dir = os.path.join(DOWNLOAD_DIR, username)
             os.makedirs(user_dir, exist_ok=True)
 
-            # Download images
+            # --- Download profile picture ---
+            profile_image_url = post.get("profile_image_link")
+            profile_image_local_path = None
+            if profile_image_url:
+                profile_image_local_path = os.path.join(user_dir, 'profile.jpg')
+                download_image(profile_image_url, profile_image_local_path)
+
+            # --- Download post images ---
             image_paths = []
             for i, img_url in enumerate(post.get("photos", [])):
                 filename = f"{shortcode}_{i}.jpg"
@@ -80,17 +88,18 @@ with open(DATASET_FILE, 'r', encoding='utf-8') as f:
             # Save metadata into DB
             cur.execute('''
                 INSERT OR IGNORE INTO posts (
-                    post_id, username, user_id, profile_url, profile_image,
+                    post_id, username, user_id, profile_url, profile_image_url, profile_image_local,
                     followers, posts_count, is_verified, shortcode,
                     post_url, content_type, date_posted,
                     num_comments, likes, image_local_paths
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 post_id,
                 username,
                 post.get("user_posted_id"),
                 post.get("profile_url"),
-                post.get("profile_image_link"),
+                profile_image_url,
+                profile_image_local_path,
                 post.get("followers"),
                 post.get("posts_count"),
                 int(post.get("is_verified", False)),
