@@ -1,7 +1,7 @@
 import json
-import pandas as pd
+from datetime import datetime
 
-# Load your raw JSON data
+# Load raw JSON data
 with open('data/dataset.json', 'r', encoding='utf-8') as f:
     raw_data = json.load(f)
 
@@ -9,7 +9,6 @@ with open('data/dataset.json', 'r', encoding='utf-8') as f:
 cleaned_data = []
 
 for post in raw_data:
-    # Extract only the fields you need
     cleaned_post = {
         'url': post.get('url'),
         'user_posted': post.get('user_posted'),
@@ -19,21 +18,16 @@ for post in raw_data:
         'date_posted': post.get('date_posted'),
         'likes': post.get('likes', 0),
         'photos': post.get('photos', []),
-        'is_verified': post.get('is_verified', False),  # Add is_verified parameter
-        'followers': post.get('followers', 0)  # Add followers count
+        'is_verified': post.get('is_verified', False),
+        'followers': post.get('followers', 0)
     }
-    
-    # Filter out posts without photos — only keep posts that include at least one image
+
+   # Filter out posts without photos — only keep posts that include at least one image
     if cleaned_post['photos']:
         cleaned_data.append(cleaned_post)
 
-# Convert to DataFrame for easier use
-df = pd.DataFrame(cleaned_data)
+# Save cleaned data to JSON
+with open('cleaned_instagram_data2.json', 'w', encoding='utf-8') as f:
+    json.dump(cleaned_data, f, ensure_ascii=False, indent=2)
 
-# Optional: convert date_posted to datetime type (better for sorting/filtering later)
-df['date_posted'] = pd.to_datetime(df['date_posted'], errors='coerce')
-
-# Save cleaned data to CSV for later use
-df.to_csv('cleaned_instagram_data.csv', index=False)
-
-print("Data cleaning complete! Cleaned dataset saved as 'cleaned_instagram_data.csv'")
+print("Data cleaning complete! Cleaned dataset saved as 'cleaned_instagram_data.json'")
