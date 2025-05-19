@@ -3,6 +3,7 @@ A tool to detect catfish accounts on Instagram by analyzing profile pictures and
 
 # Project overview and setup instructions
 
+# Download the requirment.txt
 ## Git LFS Installation
 
 This project uses Git LFS (Large File Storage) to manage large files. Please follow these steps to set it up:

@@ -1,8 +1,8 @@
 import json
-from datetime import datetime
+import os
 
 # Load raw JSON data
-with open('data/dataset.json', 'r', encoding='utf-8') as f:
+with open('data/raw_dataset.json', 'r', encoding='utf-8') as f:
     raw_data = json.load(f)
 
 # Container for cleaned data
@@ -22,12 +22,17 @@ for post in raw_data:
         'followers': post.get('followers', 0)
     }
 
-   # Filter out posts without photos — only keep posts that include at least one image
+    # Filter out posts without photos — only keep posts that include at least one image
     if cleaned_post['photos']:
         cleaned_data.append(cleaned_post)
 
-# Save cleaned data to JSON
-with open('cleaned_instagram_data2.json', 'w', encoding='utf-8') as f:
+# Ensure the 'data' folder exists
+if not os.path.exists('data'):
+    os.makedirs('data')
+
+# Save cleaned data to JSON in the 'data' folder
+cleaned_file_path = 'data/cleaned_dataset.json'
+with open(cleaned_file_path, 'w', encoding='utf-8') as f:
     json.dump(cleaned_data, f, ensure_ascii=False, indent=2)
 
-print("Data cleaning complete! Cleaned dataset saved as 'cleaned_instagram_data.json'")
+print("Data cleaning complete! Cleaned dataset saved as 'cleaned_dataset.json'")

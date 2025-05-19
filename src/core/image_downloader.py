@@ -2,25 +2,28 @@ import requests
 from io import BytesIO
 from PIL import Image
 import matplotlib.pyplot as plt
-import pandas as pd
-import ast  # To safely evaluate the string representation of lists
+import json
 
-def fetch_and_display_images_from_csv(csv_file):
-    # Read the CSV file
-    df = pd.read_csv(csv_file)
-    
+def fetch_and_display_images_from_json(json_file):
+    # Load JSON data
+    with open(json_file, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
     # Initialize a list to store images
     images = []
-    
-    # Iterate through each row in the DataFrame
-    for index, row in df.iterrows():
-        # Extract the 'photos' column and convert it from string representation of list to actual list
-        photo_urls = ast.literal_eval(row['photos'])  # Convert string representation of list to list
+
+    # Iterate through each entry
+    for entry in data:
+        photo_urls = entry.get('photos', [])
         
         for url in photo_urls:
             try:
-                response = requests.get(url)
-                response.raise_for_status()  # Ensure we got a valid response
+                headers = {
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+                    "Referer": "https://www.instagram.com/"
+                }
+                response = requests.get(url, headers=headers)
+                response.raise_for_status()
                 image_bytes = BytesIO(response.content)
                 images.append(Image.open(image_bytes))
             except requests.exceptions.RequestException as e:
@@ -30,7 +33,7 @@ def fetch_and_display_images_from_csv(csv_file):
     if images:
         fig, axes = plt.subplots(1, len(images), figsize=(5 * len(images), 5))
         if len(images) == 1:
-            axes = [axes]  # Ensure iterable for single image
+            axes = [axes]  # Make it iterable
         for ax, img in zip(axes, images):
             ax.imshow(img)
             ax.axis("off")
@@ -40,6 +43,5 @@ def fetch_and_display_images_from_csv(csv_file):
 
 # Example usage
 if __name__ == "__main__":
-    # Define the path to the CSV file
-    csv_file_path = r"C:\Users\karin\OneDrive - Bina Nusantara\Documents\skripsi\instagram-catfish-detector\cleaned_instagram_data.csv"  # Use raw string to avoid escape issues
-    fetch_and_display_images_from_csv(csv_file_path)  # Pass the path to the function
+    json_file_path = r"C:\Users\karin\OneDrive - Bina Nusantara\Documents\skripsi\instagram-catfish-detector\data\cleaned_dataset.json"
+    fetch_and_display_images_from_json(json_file_path)
