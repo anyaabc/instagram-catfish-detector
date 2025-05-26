@@ -96,7 +96,6 @@ Output:
 
 ---
 
-
 ## 📌 Git LFS Setup (for large files)
 
 This repo uses Git LFS to store large files (e.g., images, models).
