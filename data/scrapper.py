@@ -1,3 +1,4 @@
+#ini untuk scrape data dari bright data
 import requests
 
 url = "https://api.brightdata.com/datasets/v3/trigger"

@@ -1,3 +1,4 @@
+#ini ngga kita pakai. ini script uji coba untuk dataset sample kemarin
 import json
 import os
 

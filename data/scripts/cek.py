@@ -4,7 +4,7 @@
 # conn = sqlite3.connect("data/instagram_posts.db")
 # df = pd.read_sql("SELECT * FROM posts LIMIT 5", conn)
 # print(df)
-
+#SCRIPT untuk mengecek gambar dan meta data dalam database
 
 import sqlite3
 import argparse

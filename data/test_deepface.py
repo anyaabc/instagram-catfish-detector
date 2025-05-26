@@ -1,4 +1,5 @@
-from deepface import DeepFace
+# ini script uji cobaa image matching deepface, ngga dipakai lagi 
+deepface import DeepFace
 
 # Paths to the images to compare
 img1_path = r"C:\Users\karin\OneDrive - Bina Nusantara\Documents\deepface\images1.jpeg"
