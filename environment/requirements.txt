@@ -1,25 +1,13 @@
-Flask
-Flask-Cors
-requests
+Flask==3.1.0
+Flask-Cors==5.0.1
+requests==2.32.3
 deepface==0.0.93
-tensorflow
-tf-keras
-Pillow
-numpy
-pandas
+tensorflow==2.19.0
+tf-keras==2.19.0
+Pillow==11.2.1
+numpy==2.1.3
+pandas==2.2.3
 matplotlib
 SQLAlchemy==2.0.30 
 sqlite-utils==3.36
 
-
-
-# Untuk requirement.txt version yang telah terinstalled
-# Flask==3.1.0
-# Flask-Cors==5.0.1
-# requests==2.32.3
-# deepface==0.0.93
-# tensorflow==2.19.0
-# tf-keras==2.19.0
-# Pillow==11.2.1
-# numpy==2.1.3
-# pandas==2.2.3
