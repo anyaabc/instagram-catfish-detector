@@ -55,6 +55,7 @@ cd instagram-catfish-detector
 ```bash
 python -m venv venv
 source venv/bin/activate     # On Windows: venv\Scripts\activate
+setiap jalankan script di virtual environment gunakan command ini python path/to/script.py
 ```
 
 ### Step 3 – Install Python Dependencies
