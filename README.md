@@ -1,11 +1,5 @@
-# 🕵️‍♂️ instagram-catfish-detector
-
-A tool to detect catfish accounts on Instagram by analyzing profile pictures and post metadata using OSINT techniques and facial recognition.
-
----
 ## 📖 Project Description
-
-**Catfish Checker** is a cybersecurity thesis project that allows users to upload an image and check if it appears on suspicious Instagram accounts.  
+🕵️‍♂️  **instagram-catfish-detector** is a cybersecurity thesis project that allows users to upload an image and check if it appears on suspicious Instagram accounts.  
 The tool uses facial recognition (via DeepFace) to compare uploaded images with scraped Instagram data. It helps identify potential impersonation by checking who posted the image first.
 
 ---
