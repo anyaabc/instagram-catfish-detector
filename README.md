@@ -59,7 +59,7 @@ source venv/bin/activate     # On Windows: venv\Scripts\activate
 
 ### Step 3 – Install Python Dependencies
 
-Make sure you have Python 3.10 or newer. Then run:
+Make sure you have Python 3.10. Then run:
 
 ```bash
 pip install -r environment/requirements.txt
