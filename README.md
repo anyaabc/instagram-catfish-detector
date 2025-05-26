@@ -40,7 +40,8 @@ instagram-catfish-detector/
 │   ├── utils/            # Helper functions
 │   ├── assets/           # Static assets (e.g., logo)
 │   └── tests/            # Unit tests
-│
+|
+├── templates/            # idk yet untuk apa
 └── README.md             # Project overview
 ```
 
