@@ -4,42 +4,48 @@ import sqlite3
 from tqdm import tqdm
 from deepface import DeepFace
 
-# --- CONFIGURATIONS ---
+# --- CONFIG ---
 DB_PATH = "data/instagram_posts.db"
-MODEL_NAME = "Facenet"  # You can change this to VGG-Face, ArcFace, Dlib, etc.
+MODEL_NAMES = ["ArcFace", "Facenet512", "VGG-Face"]
 
 # --- CONNECT TO DB ---
 conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
 
-# --- CREATE TABLE FOR FACE EMBEDDINGS ---
+# --- CREATE TABLE ---
 cur.execute('''
 CREATE TABLE IF NOT EXISTS face_embeddings (
     embedding_id INTEGER PRIMARY KEY AUTOINCREMENT,
     username TEXT,
     image_type TEXT,  -- 'profile' or 'post'
     image_path TEXT,
-    embedding TEXT     -- store as JSON string
+    embedding TEXT     -- JSON string: {model_name: embedding_list}
 )
 ''')
 conn.commit()
 
 # --- FACE EMBEDDING FUNCTION ---
-def get_face_embedding(image_path):
-    try:
-        # Use DeepFace to extract embedding
-        embedding_result = DeepFace.represent(
-            img_path=image_path,
-            model_name=MODEL_NAME,
-            enforce_detection=True
-        )
-        if embedding_result:
-            return embedding_result[0]["embedding"]
-    except Exception as e:
-        print(f"⚠️ Face not detected in {image_path}: {e}")
-    return None
+def get_face_embeddings(image_path):
+    """
+    Extract embeddings for all models from one image.
+    Returns dict {model_name: embedding_list} or None if no face detected for any model.
+    """
+    embeddings = {}
+    for model_name in MODEL_NAMES:
+        try:
+            result = DeepFace.represent(
+                img_path=image_path,
+                model_name=model_name,
+                enforce_detection=True
+            )
+            if result:
+                embeddings[model_name] = result[0]["embedding"]
+        except Exception as e:
+            print(f"⚠️ No face detected in {image_path} for {model_name}: {e}")
 
-# --- PROCESS POSTS FROM DB ---
+    return embeddings if embeddings else None
+
+# --- PROCESS DB POSTS ---
 cur.execute("SELECT username, profile_image_local, image_local_paths FROM posts")
 rows = cur.fetchall()
 
@@ -47,30 +53,30 @@ count_inserted = 0
 for username, profile_img_path, image_paths_json in tqdm(rows, desc="🔍 Extracting face embeddings"):
 
     # --- PROFILE IMAGE ---
-    if profile_img_path and os.path.exists(profile_img_path):
-        embedding = get_face_embedding(profile_img_path)
-        if embedding:
+    if profile_img_path and os.path.isfile(profile_img_path):
+        embeddings = get_face_embeddings(profile_img_path)
+        if embeddings:
             cur.execute('''
                 INSERT INTO face_embeddings (username, image_type, image_path, embedding)
-                VALUES (?, ?, ?, ?)
-            ''', (username, 'profile', profile_img_path, json.dumps(embedding)))
+                VALUES (?, 'profile', ?, ?)
+            ''', (username, profile_img_path, json.dumps(embeddings)))
             conn.commit()
             count_inserted += 1
 
     # --- POST IMAGES ---
     try:
         image_paths = json.loads(image_paths_json)
-    except:
+    except json.JSONDecodeError:
         image_paths = []
 
-    for post_img_path in image_paths:
-        if post_img_path and os.path.exists(post_img_path):
-            embedding = get_face_embedding(post_img_path)
-            if embedding:
+    for img_path in image_paths:
+        if img_path and os.path.isfile(img_path):
+            embeddings = get_face_embeddings(img_path)
+            if embeddings:
                 cur.execute('''
                     INSERT INTO face_embeddings (username, image_type, image_path, embedding)
-                    VALUES (?, ?, ?, ?)
-                ''', (username, 'post', post_img_path, json.dumps(embedding)))
+                    VALUES (?, 'post', ?, ?)
+                ''', (username, img_path, json.dumps(embeddings)))
                 conn.commit()
                 count_inserted += 1
 
