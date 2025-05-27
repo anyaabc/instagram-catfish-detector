@@ -1,106 +1,72 @@
-import os
-import json
-import numpy as np
 import sqlite3
-from deepface import DeepFace
-from tqdm import tqdm
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
+import json
+import os
 
-# --- DATABASE CONFIG ---
-DB_PATH = 'data/instagram_posts.db'
+# Path to the database
+DB_PATH = "data/face_embeddings.db"
 
-# --- SELECTED MODELS FOR SPEED & ACCURACY ---
-MODEL_NAMES = ["ArcFace", "Facenet512", "VGG-Face"]
-DISTANCE_METRIC = "cosine"
+# Similarity threshold (adjust as needed)
+SIMILARITY_THRESHOLD = 0.7
 
-# --- DISTANCE THRESHOLDS PER MODEL ---
-THRESHOLDS = {
-    "ArcFace": 0.68,
-    "Facenet512": 0.30,
-    "VGG-Face": 0.30
-}
+def load_embeddings():
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    
+    # Fetch all embeddings
+    cursor.execute("SELECT username, image_type, image_path, embedding FROM face_embeddings")
+    rows = cursor.fetchall()
+    conn.close()
 
+    embeddings_dict = {}
+    for username, image_type, image_path, embedding_str in rows:
+        embedding = np.array(json.loads(embedding_str), dtype=np.float32)
+        if username not in embeddings_dict:
+            embeddings_dict[username] = {'profile': None, 'posts': []}
+        if image_type == 'profile':
+            embeddings_dict[username]['profile'] = (image_path, embedding)
+        else:
+            embeddings_dict[username]['posts'].append((image_path, embedding))
+    return embeddings_dict
 
-def extract_face_embeddings(image_path):
-    """
-    Extract embeddings from an image using multiple DeepFace models.
-    Returns a dict {model_name: embedding_vector}
-    """
-    embeddings = {}
-
-    for model_name in MODEL_NAMES:
-        try:
-            representation = DeepFace.represent(
-                img_path=image_path,
-                model_name=model_name,
-                enforce_detection=True,
-                detector_backend='opencv',
-                normalize=True
-            )
-
-            if isinstance(representation, list) and len(representation) > 0:
-                embeddings[model_name] = representation[0]["embedding"]
-        except Exception as e:
-            print(f"❌ Failed to extract embedding with {model_name}: {e}")
-
-    return embeddings
-
-
-def cosine_distance(vec1, vec2):
-    vec1 = np.array(vec1)
-    vec2 = np.array(vec2)
-    if np.linalg.norm(vec1) == 0 or np.linalg.norm(vec2) == 0:
-        return 1
-    return 1 - np.dot(vec1, vec2) / (np.linalg.norm(vec1) * np.linalg.norm(vec2))
-
-
-def match_embeddings(input_embeddings, top_k=5):
-    with sqlite3.connect(DB_PATH) as conn:
-        cur = conn.cursor()
-        cur.execute("SELECT post_id, username, image_type, image_path, date_posted, embedding FROM face_embeddings")
-        candidates = cur.fetchall()
-
+def compare_embeddings(embeddings_dict):
     results = []
+    for username, data in embeddings_dict.items():
+        profile = data['profile']
+        posts = data['posts']
 
-    for post_id, username, image_type, image_path, date_posted, embed_json in tqdm(candidates, desc="🔍 Matching faces", ncols=80):
-        db_embeddings = json.loads(embed_json)
-        total_score = 0
-        models_used = 0
+        if not profile or not posts:
+            results.append((username, "⚠️ Missing profile or post embeddings", None))
+            continue
 
-        for model_name in MODEL_NAMES:
-            if model_name in input_embeddings and model_name in db_embeddings:
-                dist = cosine_distance(input_embeddings[model_name], db_embeddings[model_name])
-                if dist <= THRESHOLDS[model_name]:
-                    total_score += (1 - dist)
-                    models_used += 1
+        profile_path, profile_embedding = profile
 
-        if models_used > 0:
-            avg_score = total_score / models_used
-            results.append({
-                "username": username,
-                "image_type": image_type,
-                "image_path": image_path,
-                "date_posted": date_posted,
-                "match_score": round(avg_score, 4)
-            })
+        # Compare profile with each post
+        matched = False
+        for post_path, post_embedding in posts:
+            similarity = cosine_similarity([profile_embedding], [post_embedding])[0][0]
+            if similarity >= SIMILARITY_THRESHOLD:
+                matched = True
+                results.append((username, "✅ Match", round(similarity, 4)))
+                break
 
-    results = sorted(results, key=lambda x: x["match_score"], reverse=True)
-    return results[:top_k]
+        if not matched:
+            results.append((username, "❌ No match", None))
+    
+    return results
 
+def main():
+    print("🔎 Running face matching...")
+    embeddings_dict = load_embeddings()
+    results = compare_embeddings(embeddings_dict)
 
-# --- MAIN EXECUTION ---
+    print("\n📋 Face Matching Results:")
+    for username, status, score in results:
+        line = f"{username}: {status}"
+        if score is not None:
+            line += f" (similarity: {score})"
+        print(line)
+
 if __name__ == "__main__":
-    uploaded_image_path = "path_to_uploaded_image.jpg"  # Replace with actual path
-
-    if not os.path.exists(uploaded_image_path):
-        print(f"🚫 File not found: {uploaded_image_path}")
-        exit(1)
-
-    input_embeddings = extract_face_embeddings(uploaded_image_path)
-
-    if not input_embeddings:
-        print("🚫 No faces detected or embeddings could not be extracted.")
-    else:
-        matches = match_embeddings(input_embeddings)
-        print("\n🎯 Top Matches:")
-        for match in matches:
-            print(match)
+    main()
