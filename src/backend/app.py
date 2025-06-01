@@ -1,20 +1,18 @@
+from flask import Flask, jsonify
 import sqlite3
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 import json
-import os
 
-# Path to the database
+app = Flask(__name__)
+
 DB_PATH = "data/face_embeddings.db"
-
-# Similarity threshold (adjust as needed)
 SIMILARITY_THRESHOLD = 0.7
 
 def load_embeddings():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
-    # Fetch all embeddings
     cursor.execute("SELECT username, image_type, image_path, embedding FROM face_embeddings")
     rows = cursor.fetchall()
     conn.close()
@@ -37,50 +35,39 @@ def compare_embeddings(embeddings_dict):
         posts = data['posts']
 
         if not profile or not posts:
-            results.append((username, "⚠️ Missing profile or post embeddings", None))
+            results.append({
+                "username": username,
+                "status": "⚠️ Missing profile or post embeddings",
+                "similarity": None
+            })
             continue
 
         profile_path, profile_embedding = profile
-
-        # Compare profile with each post
         matched = False
         for post_path, post_embedding in posts:
             similarity = cosine_similarity([profile_embedding], [post_embedding])[0][0]
             if similarity >= SIMILARITY_THRESHOLD:
                 matched = True
-                results.append((username, "✅ Match", round(similarity, 4)))
+                results.append({
+                    "username": username,
+                    "status": "✅ Match",
+                    "similarity": round(similarity, 4)
+                })
                 break
 
         if not matched:
-            results.append((username, "❌ No match", None))
-    
+            results.append({
+                "username": username,
+                "status": "❌ No match",
+                "similarity": None
+            })
     return results
 
-def main():
+@app.route("/api/face_matching", methods=["GET"])
+def face_matching_api():
     embeddings_dict = load_embeddings()
     results = compare_embeddings(embeddings_dict)
-
-    # Format results sebagai list dict agar mudah di-JSON-kan
-    formatted_results = []
-    for username, status, score in results:
-        formatted_results.append({
-            "username": username,
-            "status": status,
-            "similarity": score
-        })
-
-    # Jika dijalankan langsung dari CLI, print hasilnya
-    import sys
-    if sys.argv[0].endswith("face_matching.py"):
-        print("🔎 Running face matching...")
-        print("\n📋 Face Matching Results:")
-        for r in formatted_results:
-            line = f"{r['username']}: {r['status']}"
-            if r['similarity'] is not None:
-                line += f" (similarity: {r['similarity']})"
-            print(line)
-
-    return formatted_results
+    return jsonify(results)
 
 if __name__ == "__main__":
-    main()
+    app.run(debug=True)
