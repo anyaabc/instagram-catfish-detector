@@ -58,7 +58,10 @@ source venv/bin/activate     # On Windows: venv\Scripts\activate
 setiap jalankan script di virtual environment gunakan command ini python path/to/script.py
 ```
 
-### Step 3 – Install Python Dependencies
+### Step 3 – Install All the requirements
+
+Make sure to download MariaDB Server 11.7.2 version 
+here : https://mariadb.org/download/?t=mariadb&p=mariadb&r=11.4.7&os=windows&cpu=x86_64&pkg=msi&mirror=heru
 
 Make sure you have Python 3.10. Then run:
 

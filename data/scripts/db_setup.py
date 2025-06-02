@@ -1,127 +1,86 @@
+import sys
 import os
-import json
-import sqlite3
-import requests
-from tqdm import tqdm
 
-# --- CONFIGURATIONS ---
-DATASET_FILE = 'data/dataset.json'            # Dataset location
-DB_FILE = 'data/instagram_posts.db'           # Output SQLite DB path
-DOWNLOAD_DIR = 'data/downloads'               # Folder for downloaded images
+# Tambahkan path ke folder src/
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
-# --- INITIAL SETUP ---
-os.makedirs(DOWNLOAD_DIR, exist_ok=True)
-os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
+# dbsetup.py
+import mysql.connector
+from mysql.connector import errorcode
+from backend.config import DB_CONFIG  # Uses credentials from .env via config.py
 
-# --- CONNECT TO DATABASE ---
-conn = sqlite3.connect(DB_FILE)
-cur = conn.cursor()
+def create_tables():
+    TABLES = {}
 
-# --- CREATE TABLE IF NOT EXISTS ---
-cur.execute('''
-CREATE TABLE IF NOT EXISTS posts (
-    post_id TEXT PRIMARY KEY,
-    username TEXT,
-    user_id TEXT,
-    profile_url TEXT,
-    profile_image_url TEXT,     -- URL asli dari JSON
-    profile_image_local TEXT,   -- path lokal foto profil
-    followers INTEGER,
-    posts_count INTEGER,
-    is_verified BOOLEAN,
-    shortcode TEXT,
-    post_url TEXT,
-    content_type TEXT,
-    date_posted TEXT,
-    num_comments INTEGER,
-    likes INTEGER,
-    image_local_paths TEXT
-)
-''')
-conn.commit()
+    # User profile info
+    TABLES['instagram_users'] = (
+        """
+        CREATE TABLE IF NOT EXISTS instagram_users (
+            id BIGINT PRIMARY KEY AUTO_INCREMENT,
+            user_id VARCHAR(100) NOT NULL UNIQUE,
+            username VARCHAR(100) NOT NULL,
+            profile_url VARCHAR(255),
+            profile_image_url VARCHAR(255),
+            profile_image_local VARCHAR(255),
+            followers INT,
+            posts_count INT,
+            is_verified BOOLEAN,
+            scraped_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """
+    )
 
-# --- IMAGE DOWNLOAD FUNCTION ---
-def download_image(url, save_path):
+    # Post info (multiple per user)
+    TABLES['instagram_posts'] = (
+        """
+        CREATE TABLE IF NOT EXISTS instagram_posts (
+            id BIGINT PRIMARY KEY AUTO_INCREMENT,
+            post_id VARCHAR(100) NOT NULL UNIQUE,
+            user_id VARCHAR(100) NOT NULL,
+            shortcode VARCHAR(100),
+            post_url VARCHAR(255),
+            content_type VARCHAR(50),
+            date_posted DATETIME,
+            num_comments INT,
+            likes INT,
+            image_local_paths TEXT,
+            FOREIGN KEY (user_id) REFERENCES instagram_users(user_id) ON DELETE CASCADE
+        );
+        """
+    )
+
+    # Face embeddings for recognition
+    TABLES['face_embeddings'] = (
+        """
+        CREATE TABLE IF NOT EXISTS face_embeddings (
+            id BIGINT PRIMARY KEY AUTO_INCREMENT,
+            user_id VARCHAR(100) NOT NULL,
+            embedding LONGBLOB NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES instagram_users(user_id) ON DELETE CASCADE
+        );
+        """
+    )
+
     try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        with open(save_path, 'wb') as f:
-            f.write(response.content)
-        return True
-    except Exception as e:
-        print(f"⚠️ Failed to download {url}: {e}")
-        return False
+        cnx = mysql.connector.connect(**DB_CONFIG)
+        cursor = cnx.cursor()
 
-# --- MAIN PROCESSING LOOP ---
-inserted_count = 0
+        for table_name, ddl in TABLES.items():
+            print(f"Creating table `{table_name}`...", end='')
+            cursor.execute(ddl)
+            print("OK")
 
-with open(DATASET_FILE, 'r', encoding='utf-8') as f:
-    for line in tqdm(f, desc="🔄 Processing posts"):
-        try:
-            post = json.loads(line.strip())
-            username = post.get("user_posted")
-            shortcode = post.get("shortcode")
-            post_id = post.get("post_id")
+        cursor.close()
+        cnx.close()
 
-            if not (username and post_id and shortcode):
-                continue  # skip incomplete entries
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print("🚫 Error: Invalid DB credentials")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            print("🚫 Error: Database does not exist")
+        else:
+            print(err)
 
-            # Create folder for this user's images
-            user_dir = os.path.join(DOWNLOAD_DIR, username)
-            os.makedirs(user_dir, exist_ok=True)
-
-            # --- Download profile picture ---
-            profile_image_url = post.get("profile_image_link")
-            profile_image_local_path = None
-            if profile_image_url:
-                profile_image_local_path = os.path.join(user_dir, 'profile.jpg')
-                download_image(profile_image_url, profile_image_local_path)
-
-            # --- Download post images ---
-            image_paths = []
-            for i, img_url in enumerate(post.get("photos", [])):
-                filename = f"{shortcode}_{i}.jpg"
-                save_path = os.path.join(user_dir, filename)
-                if download_image(img_url, save_path):
-                    image_paths.append(save_path)
-
-            # Save metadata into DB
-            cur.execute('''
-                INSERT OR IGNORE INTO posts (
-                    post_id, username, user_id, profile_url, profile_image_url, profile_image_local,
-                    followers, posts_count, is_verified, shortcode,
-                    post_url, content_type, date_posted,
-                    num_comments, likes, image_local_paths
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (
-                post_id,
-                username,
-                post.get("user_posted_id"),
-                post.get("profile_url"),
-                profile_image_url,
-                profile_image_local_path,
-                post.get("followers"),
-                post.get("posts_count"),
-                int(post.get("is_verified", False)),
-                shortcode,
-                post.get("url"),
-                post.get("content_type"),
-                post.get("date_posted"),
-                post.get("num_comments"),
-                post.get("likes"),
-                json.dumps(image_paths)
-            ))
-
-            inserted_count += 1
-
-        except Exception as e:
-            print(f"❌ Error processing post: {e}")
-
-# --- FINALIZE ---
-conn.commit()
-conn.close()
-
-print("\n✅ DONE")
-print(f"📄 Database saved at: {DB_FILE}")
-print(f"🖼️  Images saved under: {DOWNLOAD_DIR}")
-print(f"🧮 Total posts inserted: {inserted_count}")
+if __name__ == "__main__":
+    create_tables()
