@@ -1,18 +1,19 @@
+# file: data/scripts/db_setup.py
+
 import sys
 import os
 
 # Tambahkan path ke folder src/
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 
-# dbsetup.py
 import mysql.connector
 from mysql.connector import errorcode
-from backend.config import DB_CONFIG  # Uses credentials from .env via config.py
+from backend.config import DB_CONFIG
 
 def create_tables():
     TABLES = {}
 
-    # User profile info
+    # Tabel users
     TABLES['instagram_users'] = (
         """
         CREATE TABLE IF NOT EXISTS instagram_users (
@@ -30,7 +31,7 @@ def create_tables():
         """
     )
 
-    # Post info (multiple per user)
+    # Tabel posts
     TABLES['instagram_posts'] = (
         """
         CREATE TABLE IF NOT EXISTS instagram_posts (
@@ -49,15 +50,18 @@ def create_tables():
         """
     )
 
-    # Face embeddings for recognition
+    # Tabel embeddings (dengan post_id & image_path)
     TABLES['face_embeddings'] = (
         """
         CREATE TABLE IF NOT EXISTS face_embeddings (
             id BIGINT PRIMARY KEY AUTO_INCREMENT,
             user_id VARCHAR(100) NOT NULL,
+            post_id VARCHAR(100) NULL,
             embedding LONGBLOB NOT NULL,
+            image_path TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES instagram_users(user_id) ON DELETE CASCADE
+            FOREIGN KEY (user_id) REFERENCES instagram_users(user_id) ON DELETE CASCADE,
+            FOREIGN KEY (post_id) REFERENCES instagram_posts(post_id) ON DELETE CASCADE
         );
         """
     )
@@ -73,7 +77,6 @@ def create_tables():
 
         cursor.close()
         cnx.close()
-
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
             print("🚫 Error: Invalid DB credentials")
