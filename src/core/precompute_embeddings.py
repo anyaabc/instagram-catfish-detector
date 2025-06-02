@@ -1,4 +1,4 @@
-#SCRIPT untuk sql
+#SCRIPT precompute_embeddings menggunakna sqlite3. Tidak dipakai
 import os
 import json
 import sqlite3

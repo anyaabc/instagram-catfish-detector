@@ -1,86 +1,191 @@
-import sqlite3
-import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
-import json
+# file: core/face_matching.py
+
 import os
+import json
+import numpy as np
+import mysql.connector
+from deepface import DeepFace
+from scipy.spatial.distance import cosine
+from datetime import datetime
 
-# Path to the database
-DB_PATH = "data/face_embeddings.db"
+# Import konfigurasi database dari backend
+from backend.config import DB_CONFIG
 
-# Similarity threshold (adjust as needed)
-SIMILARITY_THRESHOLD = 0.7
+# Model yang digunakan harus konsisten dengan generate_embeddings.py
+MODEL_NAMES = ["ArcFace", "Facenet512", "VGG-Face"]
 
-def load_embeddings():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    
-    # Fetch all embeddings
-    cursor.execute("SELECT username, image_type, image_path, embedding FROM face_embeddings")
-    rows = cursor.fetchall()
+
+def load_uploaded_image_embedding(image_path):
+    """
+    Ambil embedding wajah dari gambar yang diunggah user.
+    """
+    embeddings = {}
+    for model_name in MODEL_NAMES:
+        try:
+            result = DeepFace.represent(
+                img_path=image_path,
+                model_name=model_name,
+                enforce_detection=True
+            )
+            if result:
+                embeddings[model_name] = result[0]['embedding']
+        except Exception as e:
+            print(f"⚠️ No face detected in uploaded image for {model_name}: {e}")
+    return embeddings if embeddings else None
+
+
+def bytes_to_embeddings(byte_data):
+    """
+    Konversi LONGBLOB (bytes) ke dict embedding.
+    """
+    return json.loads(byte_data.decode('utf-8'))
+
+
+def cosine_similarity(vec1, vec2):
+    """
+    Hitung similarity antar dua embedding menggunakan 1 - cosine distance.
+    """
+    return 1 - cosine(vec1, vec2)
+
+
+def find_potential_catfish_accounts(uploaded_image_path, similarity_threshold=0.7):
+    """
+    Cek kemiripan wajah antara gambar yang diupload user dengan semua gambar di DB.
+    Kembalikan daftar akun yang mencurigakan.
+    """
+    uploaded_embeddings = load_uploaded_image_embedding(uploaded_image_path)
+    if not uploaded_embeddings:
+        return []
+
+    conn = mysql.connector.connect(**DB_CONFIG)
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT fe.user_id, fe.post_id, fe.embedding, fe.image_path, iu.username, ip.taken_at FROM face_embeddings fe LEFT JOIN instagram_users iu ON fe.user_id = iu.user_id LEFT JOIN instagram_posts ip ON fe.post_id = ip.post_id")
+    results = cursor.fetchall()
+
+    matches = []
+
+    for row in results:
+        db_embeddings = bytes_to_embeddings(row['embedding'])
+        similarities = []
+
+        for model in MODEL_NAMES:
+            if model in uploaded_embeddings and model in db_embeddings:
+                sim = cosine_similarity(uploaded_embeddings[model], db_embeddings[model])
+                similarities.append(sim)
+
+        if similarities:
+            avg_similarity = np.mean(similarities)
+            if avg_similarity >= similarity_threshold:
+                matches.append({
+                    "user_id": row['user_id'],
+                    "username": row.get('username'),
+                    "post_id": row.get('post_id'),
+                    "image_path": row.get('image_path'),
+                    "taken_at": row.get('taken_at'),
+                    "similarity_score": round(avg_similarity, 3)
+                })
+
+    cursor.close()
     conn.close()
 
-    embeddings_dict = {}
-    for username, image_type, image_path, embedding_str in rows:
-        embedding = np.array(json.loads(embedding_str), dtype=np.float32)
-        if username not in embeddings_dict:
-            embeddings_dict[username] = {'profile': None, 'posts': []}
-        if image_type == 'profile':
-            embeddings_dict[username]['profile'] = (image_path, embedding)
-        else:
-            embeddings_dict[username]['posts'].append((image_path, embedding))
-    return embeddings_dict
+    # Urutkan hasil berdasarkan tanggal post (yang paling lama dulu)
+    matches.sort(key=lambda x: datetiimport os
+import json
+import mysql.connector
+from deepface import DeepFace
+import numpy as np
+from backend.config import DB_CONFIG
 
-def compare_embeddings(embeddings_dict):
-    results = []
-    for username, data in embeddings_dict.items():
-        profile = data['profile']
-        posts = data['posts']
+def cosine_similarity(vec1, vec2):
+    """Hitung cosine similarity antara dua vektor."""
+    vec1, vec2 = np.array(vec1), np.array(vec2)
+    dot_product = np.dot(vec1, vec2)
+    norm_product = np.linalg.norm(vec1) * np.linalg.norm(vec2)
+    return dot_product / norm_product if norm_product else 0
 
-        if not profile or not posts:
-            results.append((username, "⚠️ Missing profile or post embeddings", None))
-            continue
+def load_uploaded_image_embedding(image_path):
+    """
+    Ekstrak embedding dari gambar yang diunggah dengan beberapa model DeepFace.
+    """
+    MODEL_NAMES = ["ArcFace", "Facenet512", "VGG-Face"]
+    embeddings = {}
+    for model_name in MODEL_NAMES:
+        try:
+            result = DeepFace.represent(img_path=image_path, model_name=model_name, enforce_detection=True)
+            if result:
+                embeddings[model_name] = result[0]["embedding"]
+        except Exception as e:
+            print(f"⚠️ Face not found in uploaded image for model {model_name}: {e}")
+    return embeddings if embeddings else None
 
-        profile_path, profile_embedding = profile
+def find_potential_catfish_accounts(uploaded_image_path, similarity_threshold=0.7):
+    """
+    Cari akun yang punya kemiripan wajah tinggi dengan gambar yang diunggah.
+    """
+    uploaded_embeddings = load_uploaded_image_embedding(uploaded_image_path)
+    if not uploaded_embeddings:
+        print("🚫 No valid face detected in uploaded image.")
+        return []
 
-        # Compare profile with each post
-        matched = False
-        for post_path, post_embedding in posts:
-            similarity = cosine_similarity([profile_embedding], [post_embedding])[0][0]
-            if similarity >= SIMILARITY_THRESHOLD:
-                matched = True
-                results.append((username, "✅ Match", round(similarity, 4)))
-                break
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor(dictionary=True)
+    except mysql.connector.Error as err:
+        print(f"🚫 Database connection error: {err}")
+        return []
 
-        if not matched:
-            results.append((username, "❌ No match", None))
-    
-    return results
+    matched_profiles = []
 
-def main():
-    embeddings_dict = load_embeddings()
-    results = compare_embeddings(embeddings_dict)
+    try:
+        cursor.execute("""
+            SELECT fe.user_id, fe.post_id, fe.embedding, fe.image_path,
+                   iu.username, iu.full_name, ip.caption, ip.timestamp
+            FROM face_embeddings fe
+            LEFT JOIN instagram_users iu ON fe.user_id = iu.user_id
+            LEFT JOIN instagram_posts ip ON fe.post_id = ip.post_id
+        """)
+        embeddings_db = cursor.fetchall()
 
-    # Format results sebagai list dict agar mudah di-JSON-kan
-    formatted_results = []
-    for username, status, score in results:
-        formatted_results.append({
-            "username": username,
-            "status": status,
-            "similarity": score
-        })
+        for row in embeddings_db:
+            try:
+                db_embeddings = json.loads(row["embedding"])
+            except:
+                continue
 
-    # Jika dijalankan langsung dari CLI, print hasilnya
-    import sys
-    if sys.argv[0].endswith("face_matching.py"):
-        print("🔎 Running face matching...")
-        print("\n📋 Face Matching Results:")
-        for r in formatted_results:
-            line = f"{r['username']}: {r['status']}"
-            if r['similarity'] is not None:
-                line += f" (similarity: {r['similarity']})"
-            print(line)
+            similarities = [
+                cosine_similarity(uploaded_embeddings[model], db_embeddings[model])
+                for model in uploaded_embeddings if model in db_embeddings
+            ]
+            avg_similarity = sum(similarities) / len(similarities) if similarities else 0
 
-    return formatted_results
+            if avg_similarity >= similarity_threshold:
+                matched_profiles.append({
+                    "user_id": row["user_id"],
+                    "username": row.get("username"),
+                    "image_path": row["image_path"],
+                    "post_id": row.get("post_id"),
+                    "full_name": row.get("full_name"),
+                    "caption": row.get("caption"),
+                    "timestamp": row.get("timestamp"),
+                    "similarity": round(avg_similarity, 4)
+                })
 
-if __name__ == "__main__":
-    main()
+        # Urutkan hasil dari yang paling lama (asumsi akun original) ke terbaru
+        matched_profiles.sort(key=lambda x: x.get("timestamp") or '', reverse=False)
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    return matched_profiles
+
+# # Optional CLI test
+# if __name__ == "__main__":
+#     test_path = "path/to/uploaded/image.jpg"
+#     results = find_potential_catfish_accounts(test_path)
+#     for match in results:
+#         print(match)
+# me.strptime(x['taken_at'], "%Y-%m-%d %H:%M:%S") if x['taken_at'] else datetime.max)
+
+#     return matches
