@@ -50,7 +50,7 @@ def create_tables():
         """
     )
 
-    # Tabel embeddings (dengan post_id & image_path)
+    # Tabel embeddings (dengan kolom source_type: 'profile' atau 'post')
     TABLES['face_embeddings'] = (
         """
         CREATE TABLE IF NOT EXISTS face_embeddings (
@@ -59,6 +59,7 @@ def create_tables():
             post_id VARCHAR(100) NULL,
             embedding LONGBLOB NOT NULL,
             image_path TEXT,
+            source_type ENUM('profile', 'post') NOT NULL DEFAULT 'post',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES instagram_users(user_id) ON DELETE CASCADE,
             FOREIGN KEY (post_id) REFERENCES instagram_posts(post_id) ON DELETE CASCADE
