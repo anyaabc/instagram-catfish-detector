@@ -4,7 +4,7 @@ import sys
 import os
 
 # Tambahkan path ke folder src/
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../src')))
 
 # import mysql.connector
 # from backend.config import DB_CONFIG

@@ -6,7 +6,7 @@ import mysql.connector
 import json
 
 # Tambahkan path ke folder src/
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../src')))
 from backend.config import DB_CONFIG
 def main():
     conn = mysql.connector.connect(**DB_CONFIG)

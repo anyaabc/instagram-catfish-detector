@@ -1,5 +1,3 @@
-# file: data/scripts/generate_embeddings.py
-
 import os
 import sys
 import json
@@ -7,11 +5,11 @@ from tqdm import tqdm
 from deepface import DeepFace
 import mysql.connector
 
-# Tambahkan path ke src agar bisa import config
+# Tambahkan path ke src agar bisa import DB config
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../src')))
 from backend.config import DB_CONFIG
 
-# Pilih beberapa model DeepFace yang ingin dipakai
+# Model yang digunakan untuk ekstraksi wajah
 MODEL_NAMES = ["ArcFace", "Facenet512", "VGG-Face"]
 
 def get_face_embeddings(image_path):
@@ -46,7 +44,7 @@ def main():
 
         total_inserted = 0
 
-        # 1. Proses embedding untuk foto profil setiap user
+        # 1. Embedding untuk foto profil
         cursor.execute("SELECT user_id, profile_image_local FROM instagram_users")
         users = cursor.fetchall()
 
@@ -59,13 +57,13 @@ def main():
                 if embeddings:
                     emb_bytes = embeddings_to_bytes(embeddings)
                     cursor.execute("""
-                        INSERT INTO face_embeddings (user_id, post_id, embedding, image_path)
-                        VALUES (%s, %s, %s, %s)
-                    """, (user_id, None, emb_bytes, profile_img_path))
+                        INSERT INTO face_embeddings (user_id, post_id, embedding, image_path, source_type)
+                        VALUES (%s, %s, %s, %s, %s)
+                    """, (user_id, None, emb_bytes, profile_img_path, 'profile'))
                     conn.commit()
                     total_inserted += 1
 
-        # 2. Proses embedding untuk setiap gambar di postingan
+        # 2. Embedding untuk gambar di postingan
         cursor.execute("SELECT post_id, user_id, image_local_paths FROM instagram_posts")
         posts = cursor.fetchall()
 
@@ -83,9 +81,9 @@ def main():
                     if embeddings:
                         emb_bytes = embeddings_to_bytes(embeddings)
                         cursor.execute("""
-                            INSERT INTO face_embeddings (user_id, post_id, embedding, image_path)
-                            VALUES (%s, %s, %s, %s)
-                        """, (user_id, post_id, emb_bytes, img_path))
+                            INSERT INTO face_embeddings (user_id, post_id, embedding, image_path, source_type)
+                            VALUES (%s, %s, %s, %s, %s)
+                        """, (user_id, post_id, emb_bytes, img_path, 'post'))
                         conn.commit()
                         total_inserted += 1
 
@@ -100,4 +98,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

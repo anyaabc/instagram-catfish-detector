@@ -1,4 +1,4 @@
-#SCRIPT DB SET UP menggunakan SQLite
+#SCRIPT DB SET UP menggunakan SQLite, jangan dijalankan
 import os
 import json
 import sqlite3

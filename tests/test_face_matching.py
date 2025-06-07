@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'
 from core.face_matching import find_potential_catfish_accounts
 
 def main():
-    uploaded_image_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/uploads/DKQ7msOzt3k_0.jpg'))
+    uploaded_image_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/uploads/test.jpg'))
     results = find_potential_catfish_accounts(uploaded_image_path)
 
     if results:
@@ -19,4 +19,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 

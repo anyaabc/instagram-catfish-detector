@@ -50,7 +50,7 @@ def create_tables():
         """
     )
 
-    # Tabel embeddings (dengan kolom source_type: 'profile' atau 'post')
+    # Tabel embeddings 
     TABLES['face_embeddings'] = (
         """
         CREATE TABLE IF NOT EXISTS face_embeddings (
