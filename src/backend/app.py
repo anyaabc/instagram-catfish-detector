@@ -1,74 +1,53 @@
-#script testing
-from flask import Flask, jsonify
-import sqlite3
-import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
-import json
+# src/backend/app.py
+
+import os
+import uuid
+import sys
+from flask import Flask, request, jsonify
+from werkzeug.utils import secure_filename
+
+# === Tambahkan path agar bisa import dari src/core ===
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
+from src.core.face_matching import find_potential_catfish_accounts
+
+# === Konfigurasi Upload ===
+UPLOAD_FOLDER = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../data/uploads'))
+ALLOWED_EXTENSIONS = {'jpg', 'jpeg', 'png'}
+MAX_CONTENT_LENGTH = 5 * 1024 * 1024  # 5MB
 
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
-DB_PATH = "data/face_embeddings.db"
-SIMILARITY_THRESHOLD = 0.7
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def load_embeddings():
-    conn = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    
-    cursor.execute("SELECT username, image_type, image_path, embedding FROM face_embeddings")
-    rows = cursor.fetchall()
-    conn.close()
+@app.route('/api/match', methods=['POST'])
+def upload_and_match():
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image part in the request'}), 400
 
-    embeddings_dict = {}
-    for username, image_type, image_path, embedding_str in rows:
-        embedding = np.array(json.loads(embedding_str), dtype=np.float32)
-        if username not in embeddings_dict:
-            embeddings_dict[username] = {'profile': None, 'posts': []}
-        if image_type == 'profile':
-            embeddings_dict[username]['profile'] = (image_path, embedding)
-        else:
-            embeddings_dict[username]['posts'].append((image_path, embedding))
-    return embeddings_dict
+    file = request.files['image']
 
-def compare_embeddings(embeddings_dict):
-    results = []
-    for username, data in embeddings_dict.items():
-        profile = data['profile']
-        posts = data['posts']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
 
-        if not profile or not posts:
-            results.append({
-                "username": username,
-                "status": "⚠️ Missing profile or post embeddings",
-                "similarity": None
-            })
-            continue
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        unique_filename = f"{uuid.uuid4().hex}_{filename}"
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+        file.save(filepath)
 
-        profile_path, profile_embedding = profile
-        matched = False
-        for post_path, post_embedding in posts:
-            similarity = cosine_similarity([profile_embedding], [post_embedding])[0][0]
-            if similarity >= SIMILARITY_THRESHOLD:
-                matched = True
-                results.append({
-                    "username": username,
-                    "status": "✅ Match",
-                    "similarity": round(similarity, 4)
-                })
-                break
+        results = find_potential_catfish_accounts(filepath)
+        return jsonify({'results': results}), 200
+    else:
+        return jsonify({'error': 'Invalid file format'}), 400
 
-        if not matched:
-            results.append({
-                "username": username,
-                "status": "❌ No match",
-                "similarity": None
-            })
-    return results
+@app.route('/')
+def index():
+    return "✅ Flask Backend Running for Catfish Checker"
 
-@app.route("/api/face_matching", methods=["GET"])
-def face_matching_api():
-    embeddings_dict = load_embeddings()
-    results = compare_embeddings(embeddings_dict)
-    return jsonify(results)
-
-if __name__ == "__main__":
+if __name__ == '__main__':
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
     app.run(debug=True)

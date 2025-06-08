@@ -3,7 +3,7 @@ import json
 import mysql.connector
 from deepface import DeepFace
 import numpy as np
-from backend.config import DB_CONFIG
+from src.backend.config import DB_CONFIG
 
 MODEL_NAMES = ["ArcFace", "Facenet512", "VGG-Face"]
 
