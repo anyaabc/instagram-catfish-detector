@@ -47,6 +47,7 @@ instagram-catfish-detector/
 ├── test/
 │   └── test_face_matching.py   # Unit test for matching
 ├── .gitignore
+├── config.env
 ├── LICENSE
 └── README.md
 ```
@@ -67,6 +68,52 @@ cd instagram-catfish-detector
 - ✅ Make sure Python version is **3.10.0**
 - ✅ Download MariaDB Server version **11.4.7**:
   [Download Link](https://mariadb.org/download/?t=mariadb&p=mariadb&r=11.4.7&os=windows&cpu=x86_64&pkg=msi&mirror=heru)
+  ### 🛠️ [Optional] Add MariaDB `bin` Folder to System PATH (Windows Only)
+
+If you want to use `mysql` or `mysqldump` commands directly from your terminal (without navigating to the installation folder every time), you should add MariaDB’s `bin` folder to your system `PATH`.
+
+#### 📌 Steps:
+
+1. **Locate MariaDB `bin` Folder**
+
+   Usually found at:
+   ```
+   C:\Program Files\MariaDB 11.7\bin
+   ```
+   *(Adjust based on your installation directory)*
+
+2. **Open Environment Variables Settings**
+   - Press `Windows + S`
+   - Type **Environment Variables**
+   - Click on **Edit the system environment variables**
+   - In the **System Properties** window, click the **Environment Variables...** button
+
+3. **Edit the `Path` Variable**
+   - Under **User variables** or **System variables**, find a variable named `Path`
+   - Select it and click **Edit...**
+   - Click **New**, then paste the path to your `bin` folder, for example:
+     ```
+     C:\Program Files\MariaDB 11.7\bin
+     ```
+
+4. **Click OK** to close all dialogs and save changes
+
+5. **Restart Terminal**
+   - Close all open terminals (CMD, PowerShell, VSCode)
+   - Open them again so the new PATH takes effect
+
+### 🔐 Important: Remember Your MariaDB Root Username and Password
+
+After installing MariaDB:
+
+- You’ll be asked to **set a root password**
+- **Keep it safe!** You’ll need this when creating your database and connecting from your application
+
+> ✅ By default, you can use:
+> - **Username**: `root`
+> - **Password**: (whatever you set during installation)
+
+You’ll enter this info later in the `config.env` file to connect your Python app to the database.
 
 ### Step 3 – (Optional) Create Virtual Environment
 
@@ -112,7 +159,7 @@ python data/scripts/check/cek_table_embeddings.py
 
 ### Step 10 – Setup DB Credentials (Environment File)
 
-Create a file named `.env` in the project root based on `.env_example`:
+Create a file named `config.env` in the project root based on `.env_example`:
 
 ```
 DB_HOST=localhost
