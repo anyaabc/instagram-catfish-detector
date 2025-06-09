@@ -21,14 +21,14 @@
 #     main()
 
 
-#SCRIPT 2
+# #SCRIPT 2
 import sys
 import os
 
 # Tambahkan path agar bisa import dari src/
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from core.face_matching import find_potential_catfish_accounts
+from src.core.face_matching import find_potential_catfish_accounts
 
 def main():
     # Path ke gambar yang akan diuji
@@ -52,3 +52,23 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+# import sys
+# import os
+# import unittest
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# from src.core.face_matching import find_potential_catfish_accounts
+
+# class TestFaceMatching(unittest.TestCase):
+#     def setUp(self):
+#         self.test_image = "tests/test_images/test_face.jpg"  # Siapkan sample image
+    
+#     def test_face_matching(self):
+#         results = find_potential_catfish_accounts(self.test_image)
+#         print("Hasil matching:", results)
+#         self.assertIsInstance(results, list)
+
+# if __name__ == "__main__":
+#     unittest.main()

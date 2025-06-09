@@ -1,4 +1,5 @@
-# file: data/scripts/verify_embeddings.py
+# file: data/scripts/cek_table_embeddings.py
+
 import os
 import sys
 import json

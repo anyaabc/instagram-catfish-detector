@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Catfish Checker</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Instagram Catfish Checker</h1>
+
+    <form id="uploadForm">
+      <label for="imageUpload">Upload Image (JPG/PNG/JPEG | Max 5MB):</label>
+      <input type="file" id="imageUpload" accept="image/jpeg,image/jpg,image/png" required />
+      <div id="previewContainer" class="hidden">
+        <p>Preview:</p>
+        <img id="imagePreview" src="#" alt="Preview" />
+      </div>
+      <button type="submit">Check</button>
+    </form>
+
+    <div id="spinner" class="hidden">
+      <div class="loader"></div>
+      <p>Processing…</p>
+    </div>
+
+    <div id="results" class="hidden">
+      <h2>Match Results</h2>
+      <div id="resultsList"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
