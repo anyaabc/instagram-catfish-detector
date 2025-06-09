@@ -1,3 +1,4 @@
+# SCRIPT UJI COBA 1
 import os
 import json
 import mysql.connector

@@ -1,15 +1,18 @@
 ## 📖 Project Description
-🕵️‍♂️  **instagram-catfish-detector** is a cybersecurity thesis project that allows users to upload an image and check if it appears on suspicious Instagram accounts.  
-The tool uses facial recognition (via DeepFace) to compare uploaded images with scraped Instagram data. It helps identify potential impersonation by checking who posted the image first.
+
+🕵️‍♂️ **instagram-catfish-detector** is a cybersecurity thesis project that enables users to upload a photo and check whether the same face appears on suspicious Instagram accounts. 
+
+This tool helps detect potential impersonation (catfishing) by checking who posted a similar image first using facial recognition.
 
 ---
 
-The tool uses:
+The system uses:
 
-* 🧠 DeepFace for face matching
-* 🌐 Bright Data for scraping public Instagram data
-* 🐍 Flask for the backend API
-* 💻 Simple frontend UI
+* 🧠 **DeepFace** for facial recognition
+* 🌐 **Bright Data** to scrape public Instagram metadata
+* 🐍 **Flask** as the backend REST API
+* 💻 A clean web frontend (HTML + JS + CSS)
+* 🛢️ **MariaDB** as the main database
 
 ---
 
@@ -17,26 +20,35 @@ The tool uses:
 
 ```
 instagram-catfish-detector/
-├── data/                 # Dataset and image storage
-│   ├── scripts/          # DB and image setup
-│   ├── dataset.json      # Main Instagram metadata
-│   ├── cleaned/          # Optional cleaned dataset
-│   └── downloads/        # Downloaded post/profile images
+├── data/
+│   ├── images/                  # Stored Instagram post/profile images
+│   ├── uploads/                 # Uploaded images from users
+│   └── scripts/
+│       ├── check/              # Script to check DB tables/debug image dates
+│       ├── db_setup.py         # Create DB schema and insert records
+│       ├── download_images.py  # Download image files from metadata
+│       └── generate_embeddings.py  # Generate embeddings for each image
 │
-├── environment/          # Environment setup
-│   ├── requirements.txt  # Python dependencies
-│   └── README.md         # (This file)
+├── environment/
+│   ├── requirements.txt        # Python dependencies
+│   └── README.md               # Optional env doc
 │
-├── src/                  # Main source code
-│   ├── backend/          # Flask backend
-│   ├── core/             # Face recognition logic
-│   ├── frontend/         # Web frontend
-│   ├── utils/            # Helper functions
-│   ├── assets/           # Static assets (e.g., logo)
-│   └── tests/            # Unit tests
-|
-├── templates/            # idk yet untuk apa
-└── README.md             # Project overview
+├── src/
+│   ├── backend/
+│   │   ├── app.py              # Flask app
+│   │   └── config.py           # Config file for DB credentials
+│   ├── core/
+│   │   └── face_matching.py    # Face matching logic
+│   └── frontend/
+│       ├── index.html          # Web UI
+│       ├── style.css           # Styling
+│       └── script.js           # Client-side logic
+│
+├── test/
+│   └── test_face_matching.py   # Unit test for matching
+├── .gitignore
+├── LICENSE
+└── README.md
 ```
 
 ---
@@ -50,65 +62,113 @@ git clone https://github.com/yourname/instagram-catfish-detector.git
 cd instagram-catfish-detector
 ```
 
-### Step 2 – (Optional) Create a Virtual Environment
+### Step 2 – Install Python and MariaDB
+
+- ✅ Make sure Python version is **3.10.0**
+- ✅ Download MariaDB Server version **11.4.7**:
+  [Download Link](https://mariadb.org/download/?t=mariadb&p=mariadb&r=11.4.7&os=windows&cpu=x86_64&pkg=msi&mirror=heru)
+
+### Step 3 – (Optional) Create Virtual Environment
 
 ```bash
 python -m venv venv
-source venv/bin/activate     # On Windows: venv\Scripts\activate
-setiap jalankan script di virtual environment gunakan command ini python path/to/script.py
+source venv/bin/activate     # Windows: venv\Scripts\activate
 ```
 
-### Step 3 – Install All the requirements
-
-Make sure to download MariaDB Server 11.7.2 version 
-here : https://mariadb.org/download/?t=mariadb&p=mariadb&r=11.4.7&os=windows&cpu=x86_64&pkg=msi&mirror=heru
-
-Make sure you have Python 3.10. Then run:
+### Step 4 – Install All Python Requirements
 
 ```bash
 pip install -r environment/requirements.txt
 ```
 
----
+### Step 5 – Ensure Dataset is Present
 
-## 📦 Dataset & DB Setup
+Ensure the file `data/dataset.json` is available. This contains Instagram metadata.
 
-### Step 4 – Add Dataset
-
-Ensure the file `data/dataset.json` is present. It contains scraped Instagram metadata.
-
-### Step 5 – Run DB & Image Setup
-
-This will download profile/post images and populate `instagram_posts.db`:
+### Step 6 – Run DB Setup
 
 ```bash
-python data/scripts/dbsetup.py
+python data/scripts/db_setup.py
 ```
 
-Output:
+### Step 7 – Download Instagram Images
+
+```bash
+python data/scripts/download_images.py
+```
+
+### Step 8 – Generate Face Embeddings
+
+```bash
+python data/scripts/generate_embeddings.py
+```
+
+### Step 9 – (Optional) Debug / Check Tables
+
+```bash
+# Check embeddings or DB table existence:
+python data/scripts/check/cek_table_embeddings.py
+```
+
+### Step 10 – Setup DB Credentials (Environment File)
+
+Create a file named `.env` in the project root based on `.env_example`:
 
 ```
-✅ Database saved at: data/instagram_posts.db
-🖼️  Images downloaded to: data/downloads/
-🧮 Posts inserted: XXX
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=your_db_password
+DB_NAME=instagram_db
+
+```
+
+Ensure MariaDB/MySQL service is running.
+
+### Step 11 – (Optional) Run Unit Test for Matching
+
+```bash
+python test/test_face_matching.py
+```
+
+### Step 12 – Run the Flask App
+
+```bash
+python src/backend/app.py
 ```
 
 ---
 
-## 📌 Git LFS Setup (for large files)
+## 🌐 Using the Web Interface
 
-This repo uses Git LFS to store large files (e.g., images, models).
+**Don't use Live Server** to open `index.html`. Access via Flask instead:
 
-### Install Git LFS:
+1. Open browser to `http://127.0.0.1:5000/`
+2. Upload image (JPG/PNG only, max 5MB)
+3. Preview image shown before submitting
+4. System processes image and returns results
+5. Results include face matches + metadata + original post info
 
-* **Windows**: [Git LFS Installer](https://git-lfs.github.com/)
-* **macOS**: `brew install git-lfs`
-* **Linux**: `sudo apt install git-lfs`
+---
 
-Then run:
+## 🧰 Requirements (environment/requirements.txt)
 
-```bash
-git lfs install
+```
+Flask==3.1.0
+Flask-Cors==5.0.1
+requests==2.32.3
+deepface==0.0.93
+tensorflow==2.19.0
+tf-keras==2.19.0
+Pillow==11.2.1
+numpy==2.1.3
+pandas==2.2.3
+matplotlib==3.10.3
+opencv-python==4.11.0.86
+tqdm==4.67.1
+scikit-learn==1.6.1
+mysql-connector-python==9.3.0
+python-dotenv==1.1.0
 ```
 
 ---
@@ -123,10 +183,34 @@ cd instagram-catfish-detector
 python -m venv venv
 source venv/bin/activate
 
-# Install requirements
+# Install dependencies
 pip install -r environment/requirements.txt
 
-# Dataset + DB
-python data/scripts/dbsetup.py
+# Dataset setup
+python data/scripts/db_setup.py
+python data/scripts/download_images.py
+python data/scripts/generate_embeddings.py
+
+# Optional checks
+python data/scripts/check/cek_table_embeddings.py
+
+# Start Flask App
+python src/backend/app.py
+
+# Access frontend
+http://127.0.0.1:5000/
+```
 
 ---
+
+## 📸 Fitur Tambahan
+
+- ✅ Validasi ukuran dan format file (JPG/PNG, max 5MB)
+- ✅ Preview gambar sebelum dikirim
+- ✅ Spinner loading saat pengecekan
+- ✅ Hasil match disertai gambar dan metadata pengguna asli
+- ✅ UI responsif dan siap untuk laptop/desktop
+
+---
+
+

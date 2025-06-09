@@ -1,4 +1,4 @@
-#script yang hasilnya paling akurat
+## SCRIPT UJI COBA 2: ini  yang hasilnya  akurat
 import os
 import json
 import mysql.connector

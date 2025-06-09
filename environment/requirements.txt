@@ -12,8 +12,8 @@ opencv-python==4.11.0.86
 # SQLAlchemy==2.0.30 
 # sqlite-utils==3.36
 tqdm==4.67.1
-scikit-learn
-mysql-connector-python
+scikit-learn==1.6.1
+mysql-connector-python==9.3.0
 python-dotenv==1.1.0
 
 

@@ -1,3 +1,4 @@
+# SCRIPT FIX
 import os
 import json
 import mysql.connector
