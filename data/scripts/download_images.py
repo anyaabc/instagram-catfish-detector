@@ -1,3 +1,17 @@
+""""
+data/scripts/download_images.py
+Fungsi:
+1. Mengimpor data user dan post Instagram dari file JSON ke database MySQL
+2. Mendownload gambar profil user dan gambar post
+3. Menyimpan path lokal gambar ke database
+Struktur:
+- download_image(): Fungsi utilitas untuk download gambar
+- main(): Fungsi utama untuk proses:
+  * Baca file dataset JSON
+  * Simpan data user ke tabel instagram_users
+  * Simpan data post ke tabel instagram_posts
+  * Download dan simpan gambar terkait
+"""
 import os
 import sys
 import json

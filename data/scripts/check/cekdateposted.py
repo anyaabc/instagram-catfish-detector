@@ -1,3 +1,30 @@
+"""
+Script: data/scripts/cek_date_posted_db.py
+Purpose: Retrieves and displays the earliest 10 post entries with their dates from the Instagram posts table.
+Use Case: Useful for verifying data integrity or checking timestamp formatting in the database.
+
+Features:
+- Connects to MySQL database using configured credentials
+- Fetches the first 10 records (by ID) from instagram_posts table
+- Displays post_id and date_posted in a readable format
+- Includes error handling for database connection issues
+
+Dependencies:
+- mysql.connector: For MySQL database interactions
+- Python 3.x
+
+Configuration:
+- Requires DB_CONFIG from backend.config with valid database credentials
+
+Output Format:
+📅 10 Data date_posted pertama:
+- [post_id] | [date_posted]
+- ...
+
+Error Handling:
+- Catches and displays MySQL connection errors with 🚫 prefix
+"""
+
 # file: data/scripts/cek_date_posted_db.py
 
 import mysql.connector

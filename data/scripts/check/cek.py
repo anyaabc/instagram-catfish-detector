@@ -1,4 +1,6 @@
-# # file: data/scripts/cek.py
+# File: data/scripts/cek.py
+# Description: Memeriksa apakah tabel di database sudah terbentuk atau belum.
+# Usage: Run script ini setelah migrasi database untuk verifikasi.
 
 import sys
 import os
@@ -27,8 +29,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../.
 
 # cursor.close()
 # conn.close()
-
-
 
 
 import mysql.connector

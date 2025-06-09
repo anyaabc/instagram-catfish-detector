@@ -1,4 +1,10 @@
-# file: data/scripts/debug_post_id_mapping.py
+"""
+data/scripts/cek_date_posted_db.py
+
+Fungsi: Mengecek 10 data postingan Instagram pertama (post_id & tanggal) dari database.
+Output: Menampilkan hasil dalam format mudah dibaca.
+Error: Menangkap dan menampilkan error koneksi database.
+"""
 
 import os
 import sys
