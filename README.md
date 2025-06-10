@@ -252,7 +252,7 @@ http://127.0.0.1:5000/
 
 ## 📸 Fitur Tambahan
 
-- ✅ Validasi ukuran dan format file (JPG/PNG, max 5MB)
+- ✅ Validasi ukuran dan format file (JPG/PNG/JPEG, max 5MB)
 - ✅ Preview gambar sebelum dikirim
 - ✅ Spinner loading saat pengecekan
 - ✅ Hasil match disertai gambar dan metadata pengguna asli
