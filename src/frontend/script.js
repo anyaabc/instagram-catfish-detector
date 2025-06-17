@@ -53,7 +53,7 @@ form.addEventListener('submit', async e => {
     if (res.ok && Array.isArray(payload.matches) && payload.matches.length) {
       const header = document.createElement('p');
       header.className = 'text-green-600 font-semibold mb-4';
-      header.textContent = `✅ Ditemukan ${payload.matches.length} potensi akun catfishing:\n`;
+      header.textContent = `✅ We found ${payload.matches.length} potential match(es):\n`;
       resultsList.appendChild(header);
 
       payload.matches.forEach(m => {
@@ -67,7 +67,7 @@ form.addEventListener('submit', async e => {
 
         card.innerHTML = `
           <div class="flex items-start gap-4">
-            <img src="/images/${imageFile}" alt="match" class="w-24 h-24 object-cover rounded-md border">
+            <img src="/images/${m.username}/${imageFile}" alt="match" class="w-24 h-24 object-cover rounded-md border">
             <div class="text-sm">
               <p><strong>👤 Username:</strong> ${m.username}</p>
               <p><strong>📍 Source:</strong> ${sumber}</p>
@@ -79,11 +79,11 @@ form.addEventListener('submit', async e => {
         resultsList.appendChild(card);
       });
     } else {
-      resultsList.innerHTML = '<p class="text-red-600 font-semibold">❌ Tidak ada akun catfishing yang terdeteksi.</p>';
+      resultsList.innerHTML = '<p class="text-red-600 font-semibold">❌ We cannot find anyone similar at the moment.</p>';
     }
   } catch (err) {
     spinner.classList.add('hidden');
     resultsDiv.classList.remove('hidden');
-    resultsList.innerHTML = `<p class="text-red-600">❌ Terjadi kesalahan: ${err.message}</p>`;
+    resultsList.innerHTML = `<p class="text-red-600">❌ Mistake: ${err.message}</p>`;
   }
 });
