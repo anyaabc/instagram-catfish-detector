@@ -10,12 +10,12 @@
 #     results = find_potential_catfish_accounts(uploaded_image_path)
 
 #     if results:
-#         print(f"✅ Ditemukan {len(results)} potensi akun catfishing:")
+#         print(f"✅ Found {len(results)} match(es):"
 #         for r in results:
 #             date = r.get("date_posted") or "N/A"
 #             print(f"- {r['username']} | Score: {r['similarity']} | Date: {date}")
 #     else:
-#         print("🚫 Tidak ditemukan wajah serupa (kemungkinan bukan catfish atau wajah tidak terdeteksi).")
+#         print("🚫 We can't find similar faces (either face not detected, or our database isn't up-to-date).")
 
 # if __name__ == "__main__":
 #     main()
@@ -35,7 +35,7 @@ def main():
     uploaded_image_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data/uploads/DKQ7msOzt3k_0.jpg '))
 
     if not os.path.exists(uploaded_image_path):
-        print(f"🚫 File tidak ditemukan: {uploaded_image_path}")
+        print(f"File not found: {uploaded_image_path}")
         return
 
     # Panggil fungsi untuk mendeteksi akun catfishing
@@ -43,12 +43,12 @@ def main():
 
     # Cetak hasil
     if results:
-        print(f"✅ Ditemukan {len(results)} potensi akun catfishing:\n")
+        print(f"✅ Found {len(results)} match(es):\n")
         for match in results:
-            sumber = "dari foto profil" if match['source_type'] == 'profile' else "dari postingan"
+            sumber = "Profile Picture" if match['source_type'] == 'profile' else "Post"
             print(f"- {match['username']} | Score: {match['similarity']} | Source: {sumber} | Date: {match['date_posted'] or 'N/A'}")
     else:
-        print("❌ Tidak ada akun catfishing yang terdeteksi.")
+        print("❌ We can't find any similar faces to that (either face not detected, or our database isn't up-to-date).")
 
 if __name__ == "__main__":
     main()
