@@ -22,7 +22,7 @@ def load_uploaded_image_embedding(image_path):
             if result:
                 embeddings[model] = result[0]["embedding"]
         except Exception as e:
-            print(f"⚠️ No face in uploaded image for {model}: {e}")
+            print(f"We can't find a face in uploaded image for {model}: {e}")
     return embeddings if embeddings else None
 
 def match_against_embeddings(uploaded_embeddings, source_type, threshold):
@@ -69,14 +69,14 @@ def match_against_embeddings(uploaded_embeddings, source_type, threshold):
         conn.close()
 
     except mysql.connector.Error as err:
-        print(f"🚫 DB Error: {err}")
+        print(f"Database Mistake: {err}")
 
     return matches
 
 def find_potential_catfish_accounts(uploaded_image_path):
     uploaded_embeddings = load_uploaded_image_embedding(uploaded_image_path)
     if not uploaded_embeddings:
-        print("🚫 Tidak ditemukan wajah yang valid di gambar yang diunggah.")
+        print("We aren't able to find a valid face in the image inserted.")
         return []
 
     # Step 1: Cek foto profil
@@ -96,7 +96,7 @@ def find_potential_catfish_accounts(uploaded_image_path):
             print(f"- {match['username']} | Score: {match['similarity']} | Source: dari postingan | Date: {match['date_posted'] or 'N/A'}")
         return post_matches
 
-    print("❌ Tidak ditemukan potensi akun catfishing yang cocok.")
+    print("We aren't able to find matches.")
     return []
 
 # Optional: CLI test
