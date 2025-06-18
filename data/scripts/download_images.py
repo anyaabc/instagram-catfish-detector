@@ -1,7 +1,7 @@
 """"
 data/scripts/download_images.py
 Fungsi:
-1. Mengimpor data user dan post Instagram dari file JSON ke database MySQL
+1. Mengimpor data user dan post Instagram dari file JSON ke database MariaDB
 2. Mendownload gambar profil user dan gambar post
 3. Menyimpan path lokal gambar ke database
 Struktur:
@@ -37,7 +37,7 @@ def download_image(url, save_path):
             f.write(response.content)
         return save_path
     except Exception as e:
-        print(f"⚠️ Gagal unduh {url}: {e}")
+        print(f"Failed to download {url}: {e}")
         return None
 
 def main():
@@ -131,19 +131,19 @@ def main():
                 inserted_posts += 1
 
             except Exception as e:
-                print(f"❌ Error processing post: {e}")
+                print(f"There's a mistake with post processing: {e}")
 
         conn.commit()
         cursor.close()
         conn.close()
 
     except mysql.connector.Error as err:
-        print(f"🚫 Database error: {err}")
+        print(f"Mistake regarding database: {err}")
 
-    print("\n✅ SELESAI")
-    print(f"👤 Jumlah user baru: {len(inserted_users)}")
-    print(f"📷 Jumlah post disimpan: {inserted_posts}")
-    print(f"🗂️ Folder gambar: {DOWNLOAD_DIR}")
+    print("\n COMPLETED")
+    print(f"New users: {len(inserted_users)}")
+    print(f"Inserted posts: {inserted_posts}")
+    print(f"Picture folder: {DOWNLOAD_DIR}")
 
 if __name__ == "__main__":
     main()

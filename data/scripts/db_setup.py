@@ -80,9 +80,9 @@ def create_tables():
         cnx.close()
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-            print("🚫 Error: Invalid DB credentials")
+            print("Mistake: No such DB credentials")
         elif err.errno == errorcode.ER_BAD_DB_ERROR:
-            print("🚫 Error: Database does not exist")
+            print("Mistake: No such database")
         else:
             print(err)
 
