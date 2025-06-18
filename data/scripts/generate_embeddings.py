@@ -48,7 +48,7 @@ def main():
         cursor.execute("SELECT user_id, profile_image_local FROM instagram_users")
         users = cursor.fetchall()
 
-        for user in tqdm(users, desc="🧠 Generating embeddings (profiles)"):
+        for user in tqdm(users, desc="Generating embeddings (profiles)"):
             user_id = user['user_id']
             profile_img_path = user['profile_image_local']
 
@@ -67,7 +67,7 @@ def main():
         cursor.execute("SELECT post_id, user_id, image_local_paths FROM instagram_posts")
         posts = cursor.fetchall()
 
-        for post in tqdm(posts, desc="🧠 Generating embeddings (posts)"):
+        for post in tqdm(posts, desc="Generating embeddings (posts)"):
             post_id = post['post_id']
             user_id = post['user_id']
             try:
@@ -90,11 +90,11 @@ def main():
         cursor.close()
         conn.close()
 
-        print("\n✅ DONE: Semua embedding berhasil diproses.")
+        print("\n✅ COMPLETED: All embeddings processed.")
         print(f"🔢 Total embeddings inserted: {total_inserted}")
 
     except mysql.connector.Error as err:
-        print(f"🚫 Database Error: {err}")
+        print(f"Mistake Regarding Database: {err}")
 
 if __name__ == "__main__":
     main()
