@@ -32,7 +32,7 @@ def verify_face_embeddings():
         cursor.close()
         conn.close()
     except mysql.connector.Error as err:
-        print(f"🚫 Error: {err}")
+        print(f"🚫 Mistake: {err}")
 
 if __name__ == "__main__":
     verify_face_embeddings()
