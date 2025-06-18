@@ -1,9 +1,11 @@
-# SCRIPT FIX
+# SCRIPT 1 FIXX
+
 import os
 import json
 import mysql.connector
 from deepface import DeepFace
 import numpy as np
+from datetime import datetime
 from src.backend.config import DB_CONFIG
 
 MODEL_NAMES = ["ArcFace", "Facenet512", "VGG-Face"]
@@ -61,6 +63,14 @@ def find_potential_catfish_accounts(uploaded_image_path, similarity_threshold=0.
             avg_similarity = sum(similarities) / len(similarities) if similarities else 0
 
             if avg_similarity >= similarity_threshold:
+                # Parsing date_posted jika string
+                raw_date = row.get("date_posted")
+                if isinstance(raw_date, str):
+                    try:
+                        row["date_posted"] = datetime.strptime(raw_date, "%Y-%m-%d %H:%M:%S")
+                    except:
+                        row["date_posted"] = None
+
                 matched_profiles.append({
                     "user_id": row["user_id"],
                     "username": row.get("username"),
@@ -71,9 +81,12 @@ def find_potential_catfish_accounts(uploaded_image_path, similarity_threshold=0.
                     "source_type": row.get("source_type") or "unknown"
                 })
 
-        # Urutkan hasil: yang dari profil dulu, lalu berdasarkan tanggal
+        # Sorting baru: similarity desc, lalu tanggal desc
         matched_profiles.sort(
-            key=lambda x: (x["source_type"] != "profile", x.get("date_posted") or '')
+            key=lambda x: (
+                -x["similarity"],
+                -(x["date_posted"].timestamp() if x.get("date_posted") else 0)
+            )
         )
 
     finally:

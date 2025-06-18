@@ -1,7 +1,7 @@
 """
 data/scripts/cek_date_posted_db.py
 
-Fungsi: Mengecek 10 data postingan Instagram pertama (post_id & tanggal) dari database.
+Fungsi: Mengecek xx data postingan Instagram pertama (post_id & tanggal) dari database.
 Output: Menampilkan hasil dalam format mudah dibaca.
 Error: Menangkap dan menampilkan error koneksi database.
 """
@@ -19,7 +19,7 @@ def main():
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT post_id, embedding FROM face_embeddings LIMIT 10
+        SELECT post_id, embedding FROM face_embeddings LIMIT 100
     """)
     results = cursor.fetchall()
 
