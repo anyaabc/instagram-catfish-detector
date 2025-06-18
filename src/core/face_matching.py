@@ -1,4 +1,4 @@
-# SCRIPT 1 FIXX
+# SCRIPT 1 FIXXX
 
 import os
 import json
