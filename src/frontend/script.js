@@ -61,6 +61,7 @@ form.addEventListener('submit', async e => {
         const tanggal = m.date_posted || 'N/A';
         const similarity = (m.similarity * 100).toFixed(2);
         const imageFile = m.image_path.split('/').pop();
+        const imageFolder = m.username;
 
         const card = document.createElement('div');
         card.className = 'p-4 mb-4 rounded-lg border bg-gray-50 shadow-sm';
