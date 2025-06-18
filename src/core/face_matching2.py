@@ -21,20 +21,20 @@ def load_uploaded_image_embedding(image_path):
             if result:
                 embeddings[model_name] = result[0]["embedding"]
         except Exception as e:
-            print(f"⚠️ Face not found in uploaded image for model {model_name}: {e}")
+            print(f"Can't find face in inserted image for model {model_name}: {e}")
     return embeddings if embeddings else None
 
 def find_potential_catfish_accounts(uploaded_image_path, similarity_threshold=0.7):
     uploaded_embeddings = load_uploaded_image_embedding(uploaded_image_path)
     if not uploaded_embeddings:
-        print("🚫 No valid face detected in uploaded image.")
+        print("Seems like we aren't able to detect a valid face in inserted image.")
         return []
 
     try:
         conn = mysql.connector.connect(**DB_CONFIG)
         cursor = conn.cursor(dictionary=True)
     except mysql.connector.Error as err:
-        print(f"🚫 Database connection error: {err}")
+        print(f"Mistake in database connection: {err}")
         return []
 
     matched_profiles = []
