@@ -60,7 +60,7 @@ form.addEventListener('submit', async e => {
         const sumber = m.source_type === 'profile' ? 'dari foto profil' : 'dari postingan';
         const tanggal = m.date_posted || 'N/A';
         const similarity = (m.similarity * 100).toFixed(2);
-        const imageFile = m.image_path.split('/').pop();
+        const imageFile = m.image_path.split(/[\\/]/).pop();
 
         const card = document.createElement('div');
         card.className = 'p-4 mb-4 rounded-lg border bg-gray-50 shadow-sm';

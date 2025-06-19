@@ -80,19 +80,21 @@ button:hover {
 .result-card {
   display: flex;
   gap: 16px;
-  background-color: #ae996e; /* Iseng2 ganti */
-  border-left: 4px solid #8c5a3f; /* Iseng2 ganti */
+  background-color: #ae996e; /* ganti */
+  border-left: 4px solid #8c5a3f; /*  ganti */
   border-radius: 10px;
   padding: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  max-width: 100%;
+  overflow: hidden;
 }
 
+/* TAMBAHAN UNTUK SAMA DENGAN #imagePreview */
 .result-card img {
-  width: 96px;
-  height: 96px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid #ccc;
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid #d26f37;
 }
 
 .result-info p {
