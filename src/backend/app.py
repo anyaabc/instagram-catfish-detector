@@ -1,6 +1,7 @@
 import os
 import uuid
 import sys
+import time
 from flask import Flask, request, jsonify, send_file, send_from_directory
 from werkzeug.utils import secure_filename
 
@@ -69,8 +70,9 @@ def upload_and_match():
 
         # Panggil fungsi face matching
         try:
-            results = find_potential_catfish_accounts(filepath)
-            return jsonify({'matches': results}), 200
+            results, elapsed = find_potential_catfish_accounts(filepath)
+            print(f"⏱️ Proses pencocokan wajah selesai dalam {elapsed:.3f} detik")
+            return jsonify({'matches': results, 'processing_time': elapsed}), 200
         except Exception as e:
             return jsonify({'error': f"Face matching error: {str(e)}"}), 500
     else:

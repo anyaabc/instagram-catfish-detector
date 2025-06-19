@@ -6,6 +6,7 @@ import mysql.connector
 from deepface import DeepFace
 import numpy as np
 from datetime import datetime
+import time  # ditambahkan untuk mengukur durasi proses
 from src.backend.config import DB_CONFIG
 
 MODEL_NAMES = ["ArcFace", "Facenet512", "VGG-Face"]
@@ -28,15 +29,17 @@ def load_uploaded_image_embedding(image_path):
     return embeddings if embeddings else None
 
 def find_potential_catfish_accounts(uploaded_image_path, similarity_threshold=0.7):
+    start_time = time.time()  # waktu mulai
+
     uploaded_embeddings = load_uploaded_image_embedding(uploaded_image_path)
     if not uploaded_embeddings:
-        return []
+        return [], 0.0  # tambahkan 0 durasi jika tidak ada embedding
 
     try:
         conn = mysql.connector.connect(**DB_CONFIG)
         cursor = conn.cursor(dictionary=True)
     except mysql.connector.Error:
-        return []
+        return [], 0.0
 
     matched_profiles = []
 
@@ -93,4 +96,7 @@ def find_potential_catfish_accounts(uploaded_image_path, similarity_threshold=0.
         cursor.close()
         conn.close()
 
-    return matched_profiles
+    end_time = time.time()  # waktu selesai
+    elapsed = round(end_time - start_time, 3)  # durasi dalam detik (float dibulatkan 3 angka)
+
+    return matched_profiles, elapsed
