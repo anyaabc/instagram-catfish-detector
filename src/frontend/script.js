@@ -63,23 +63,21 @@ form.addEventListener('submit', async e => {
         const imageFile = m.image_path.split(/[\\/]/).pop();
 
         const card = document.createElement('div');
-        card.className = 'p-4 mb-4 rounded-lg border bg-gray-50 shadow-sm';
+        card.className = 'result-card';
 
         card.innerHTML = `
-          <div class="flex items-start gap-4">
-            <img src="/images/${m.username}/${imageFile}" alt="match" class="w-24 h-24 object-cover rounded-md border">
-            <div class="text-sm">
-              <p><strong>👤 Username:</strong> ${m.username}</p>
-              <p><strong>📍 Source:</strong> ${sumber}</p>
-              <p><strong>📅 Date Posted:</strong> ${tanggal}</p>
-              <p><strong>🔍 Similarity Score:</strong> ${similarity}%</p>
-            </div>
+          <img src="/images/${m.username}/${imageFile}" alt="match">
+          <div class="result-info">
+            <p><strong>👤 Username:</strong> ${m.username}</p>
+            <p><strong>📍 Source:</strong> ${sumber}</p>
+            <p><strong>📅 Date Posted:</strong> ${tanggal}</p>
+            <p><strong>🔍 Similarity Score:</strong> ${similarity}%</p>
           </div>
         `;
         resultsList.appendChild(card);
       });
     } else {
-      resultsList.innerHTML = '<p class="text-red-600 font-semibold">❌ We cannot find anyone similar at the moment.</p>';
+      resultsList.innerHTML = '<p class="text-red-600 font-semibold">❌ We cannot find anyone similar at the moment. You can try again.</p>';
     }
   } catch (err) {
     spinner.classList.add('hidden');
