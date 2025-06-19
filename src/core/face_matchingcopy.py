@@ -20,9 +20,6 @@ def load_uploaded_image_embedding(image_path):
         try:
             result = DeepFace.represent(img_path=image_path, model_name=model_name, enforce_detection=True)
             if result:
-                embeddings[model_name] = result[0]["embedding"]
-        except:
-            continue
     return embeddings if embeddings else None
 
 def find_potential_catfish_accounts(uploaded_image_path, similarity_threshold=0.7):
@@ -80,4 +77,38 @@ def find_potential_catfish_accounts(uploaded_image_path, similarity_threshold=0.
         cursor.close()
         conn.close()
 
-    return matched_profiles
+    except mysql.connector.Error as err:
+        print(f"🚫 DB Error: {err}")
+
+    return matches
+
+def find_potential_catfish_accounts(uploaded_image_path):
+    uploaded_embeddings = load_uploaded_image_embedding(uploaded_image_path)
+    if not uploaded_embeddings:
+        print("🚫 Tidak ditemukan wajah yang valid di gambar yang diunggah.")
+        return []
+
+    # Step 1: Cek foto profil
+    profile_matches = match_against_embeddings(uploaded_embeddings, source_type='profile', threshold=0.75)
+
+    if profile_matches:
+        print(f"Ditemukan {len(profile_matches)} potensi akun catfishing (berdasarkan foto profil):")
+        for match in sorted(profile_matches, key=lambda x: x.get("date_posted") or ''):
+            print(f"- {match['username']} | Score: {match['similarity']} | Source: dari foto profil | Date: {match['date_posted'] or 'N/A'}")
+        return profile_matches
+
+    # Step 2: Kalau tidak ada di profile, lanjut ke post
+    post_matches = match_against_embeddings(uploaded_embeddings, source_type='post', threshold=0.65)
+    if post_matches:
+        print(f"Ditemukan {len(post_matches)} potensi akun catfishing (berdasarkan postingan):")
+        for match in sorted(post_matches, key=lambda x: x.get("date_posted") or ''):
+            print(f"- {match['username']} | Score: {match['similarity']} | Source: dari postingan | Date: {match['date_posted'] or 'N/A'}")
+        return post_matches
+
+    print("❌ Tidak ditemukan potensi akun catfishing yang cocok.")
+    return []
+
+# Optional: CLI test
+if __name__ == "__main__":
+    test_path = "path/to/uploaded/image.jpg"
+    find_potential_catfish_accounts(test_path)

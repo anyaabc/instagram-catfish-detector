@@ -54,7 +54,7 @@ def main():
         conn.close()
 
     except mysql.connector.Error as err:
-        print(f"🚫 Database error: {err}")
+        print(f"🚫 Database mistake: {err}")
 
 if __name__ == "__main__":
     main()
