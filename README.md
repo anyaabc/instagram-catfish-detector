@@ -122,67 +122,105 @@ python -m venv venv
 source venv/bin/activate     # Windows: venv\Scripts\activate
 ```
 
+---
+
 ### Step 4 – Install All Python Requirements
 
 ```bash
 pip install -r environment/requirements.txt
 ```
 
+---
+
 ### Step 5 – Ensure Dataset is Present
 
-Ensure the file `data/dataset.json` is available. This contains Instagram metadata.
+Make sure this file exists:
 
-### Step 6 – Run DB Setup
+```
+data/dataset.json
+```
+
+It contains scraped Instagram metadata.
+
+---
+
+### ✅ Step 6 – Create the Database in MariaDB **(Important!)**
+
+Before running any scripts, **manually create the database** by logging into your MariaDB terminal:
+
+```sql
+CREATE DATABASE Instagramdb;
+```
+
+Without this step, `db_setup.py` will fail since it only creates the **tables**, not the **database**.
+
+---
+
+### Step 7 – Run DB Setup
 
 ```bash
 python data/scripts/db_setup.py
 ```
 
-### Step 7 – Download Instagram Images
+This creates tables and inserts records from `data/dataset.json`.
+
+---
+
+### Step 8 – Download Instagram Images
 
 ```bash
 python data/scripts/download_images.py
 ```
 
-### Step 8 – Generate Face Embeddings
+---
+
+### Step 9 – Generate Face Embeddings
 
 ```bash
 python data/scripts/generate_embeddings.py
 ```
 
-### Step 9 – (Optional) Debug / Check Tables
+---
+
+### Step 10 – (Optional) Debug / Check Tables
 
 ```bash
-# Check embeddings or DB table existence:
 python data/scripts/check/cek_table_embeddings.py
 ```
 
-### Step 10 – Setup DB Credentials (Environment File)
+---
 
-Create a file named `config.env` in the project root based on `.env_example`:
+### Step 11 – Setup DB Credentials (Environment File)
+
+Create a file named `.env` or `config.env` in the root directory with the following:
 
 ```
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=your_db_password
-DB_NAME=instagram_db
-
+DB_NAME=Instagramdb
 ```
 
-Ensure MariaDB/MySQL service is running.
+Make sure MariaDB service is running before continuing.
 
-### Step 11 – (Optional) Run Unit Test for Matching
+---
+
+### Step 12 – (Optional) Run Unit Test for Matching
 
 ```bash
 python test/test_face_matching.py
 ```
 
-### Step 12 – Run the Flask App
+---
+
+### Step 13 – Run the Flask App
 
 ```bash
 python src/backend/app.py
 ```
+
+---
 
 ---
 
@@ -233,16 +271,23 @@ source venv/bin/activate
 # Install dependencies
 pip install -r environment/requirements.txt
 
-# Dataset setup
+# Manual: create DB in MariaDB first!
+# login to MariaDB and run:
+# CREATE DATABASE Instagramdb;
+
+# Setup database and data
 python data/scripts/db_setup.py
 python data/scripts/download_images.py
 python data/scripts/generate_embeddings.py
 
-# Optional checks
+# Optional check
 python data/scripts/check/cek_table_embeddings.py
 
 # Start Flask App
 python src/backend/app.py
+
+# Open browser
+http://127.0.0.1:5000/
 
 # Access frontend
 http://127.0.0.1:5000/
@@ -250,13 +295,12 @@ http://127.0.0.1:5000/
 
 ---
 
-## 📸 Fitur Tambahan
-
-- ✅ Validasi ukuran dan format file (JPG/PNG/JPEG, max 5MB)
-- ✅ Preview gambar sebelum dikirim
-- ✅ Spinner loading saat pengecekan
-- ✅ Hasil match disertai gambar dan metadata pengguna asli
-- ✅ UI responsif dan siap untuk laptop/desktop
+## 📸 Extra Features
+✅ Image format/size validation (JPG/PNG only, max 5MB)
+✅ Live image preview before upload
+✅ Spinner animation during matching
+✅ Display of matched image, username, and post metadata
+✅ Responsive UI optimized for laptops/desktops
 
 ---
 
