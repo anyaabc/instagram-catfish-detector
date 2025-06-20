@@ -9,7 +9,7 @@ body {
 .container {
   max-width: 700px;
   margin: auto;
-  background: #fff; /* Masih putih mau lihat dlu */
+  background: #fff; 
   padding: 30px;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
@@ -18,7 +18,7 @@ body {
 h1 {
   text-align: center;
   margin-bottom: 20px;
-  color: #8c5a3f; /* Test ganti */
+  color: #8c5a3f; 
 }
 
 form {
@@ -30,13 +30,13 @@ form {
 
 input[type="file"] {
   padding: 6px;
-  border: 1px solid #d26f37; /* Test ganti */
+  border: 1px solid #d26f37; 
   border-radius: 6px;
 }
 
 button {
   padding: 10px 20px;
-  background-color: #d26f37; /* Test ganti */
+  background-color: #d26f37; 
   color: #fff;
   border: none;
   border-radius: 6px;
@@ -45,7 +45,7 @@ button {
 }
 
 button:hover {
-  background-color: #8c5a3f; /* Test ganti */
+  background-color: #8c5a3f;
 }
 
 #previewContainer {
@@ -55,7 +55,7 @@ button:hover {
 #imagePreview {
   max-width: 100%;
   height: auto;
-  border: 1px solid #d26f37; /* Ini ku coba test ganti */
+  border: 1px solid #d26f37; 
   border-radius: 6px;
   margin-top: 10px;
 }
@@ -77,31 +77,39 @@ button:hover {
   gap: 16px;
 }
 
+
 .result-card {
   display: flex;
   gap: 16px;
-  background-color: #ae996e; /* ganti */
-  border-left: 4px solid #8c5a3f; /*  ganti */
+  background-color: #ae996e; 
+  border-left: 4px solid #8c5a3f; 
   border-radius: 10px;
   padding: 16px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  max-width: 100%;
-  overflow: hidden;
+  align-items: center; 
 }
 
-/* TAMBAHAN UNTUK SAMA DENGAN #imagePreview */
 .result-card img {
-  max-width: 100%;
-  height: auto;
+  width: 120px; 
+  height: 120px;
+  object-fit: cover; 
   border-radius: 6px;
-  border: 1px solid #d26f37;
+  border: 1px solid #d26f37; 
+  flex-shrink: 0; 
+}
+
+.result-info {
+  flex: 1;
+  min-width: 0; 
 }
 
 .result-info p {
-  margin: 4px 0;
+  margin: 6px 0; 
   font-size: 14px;
+  white-space: nowrap; /* prevent text wrapping */
+  overflow: hidden;
+  text-overflow: ellipsis; /* ... jika text terlalu panjang */
 }
-
 .text-green-600 {
   color: #16a34a; 
 }
