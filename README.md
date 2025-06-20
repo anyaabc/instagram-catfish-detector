@@ -296,11 +296,11 @@ http://127.0.0.1:5000/
 ---
 
 ## 📸 Extra Features
-✅ Image format/size validation (JPG/PNG only, max 5MB)
-✅ Live image preview before upload
-✅ Spinner animation during matching
-✅ Display of matched image, username, and post metadata
-✅ Responsive UI optimized for laptops/desktops
+- ✅ Image format/size validation (JPG/PNG only, max 5MB)
+- ✅ Live image preview before upload
+- ✅ Spinner animation during matching
+- ✅ Display of matched image, username, and post metadata
+- ✅ Responsive UI optimized for laptops/desktops
 
 ---
 
