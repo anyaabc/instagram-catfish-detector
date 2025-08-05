@@ -50,7 +50,9 @@ form.addEventListener('submit', async e => {
     resultsDiv.classList.remove('hidden');
     resultsList.innerHTML = '';
 
-    if (res.ok && Array.isArray(payload.matches) && payload.matches.length) {
+   if (res.ok && payload.processing_time === 0.0) {
+      resultsList.innerHTML = '<p class="text-red-600 font-semibold">❌ No face detected in the uploaded image. Please try again with a face photo.</p>';
+    } else if (res.ok && Array.isArray(payload.matches) && payload.matches.length) {
       const header = document.createElement('p');
       header.className = 'text-green-600 font-semibold mb-4';
       header.textContent = `✅ We found ${payload.matches.length} potential match(es):\n`;

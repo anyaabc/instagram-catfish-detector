@@ -11,12 +11,14 @@ from src.backend.config import DB_CONFIG
 
 MODEL_NAMES = ["ArcFace", "Facenet512", "VGG-Face"]
 
+#fungsi untuk mengitung cosine_similiarty
 def cosine_similarity(vec1, vec2):
     vec1, vec2 = np.array(vec1), np.array(vec2)
     dot_product = np.dot(vec1, vec2)
     norm_product = np.linalg.norm(vec1) * np.linalg.norm(vec2)
     return dot_product / norm_product if norm_product else 0
 
+# Fungsi untuk menghitung embedding dari gambar yang diunggah user, jika wajah tidak terdektsi hasilnya akan none
 def load_uploaded_image_embedding(image_path):
     embeddings = {}
     for model_name in MODEL_NAMES:
